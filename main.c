@@ -72,7 +72,7 @@ printing the key on the line.\n\
       exit(EXIT_SUCCESS);
       break;
 
-    case 'v':
+    case 'v':			/* --version */
       printf("%s %s \n", program_name, VERSION);
       fputs("\
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n\
@@ -83,15 +83,12 @@ There is NO WARRANTY, to the extent permitted by law.\n\
       exit(EXIT_SUCCESS);
       break;
 
-    case '?':
-      break;
-
     default:
       fprintf(stderr,"?? getopt returned character code 0%o ??\n", c);
     }
   }
   
-  if (strlen(fileName) == 0) {
+  if (*fileName == '\0') {
     printf("Usage: %s --input file [OPTION]... \nUse --help to access help page", program_name);
     exit(EXIT_FAILURE);
   } else {
