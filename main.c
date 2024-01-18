@@ -12,12 +12,11 @@
 void rotateChar(char input, long key);
 void oneKey(char* optarg, bool printKeys, FILE** file);
 void allKeys(bool printKeys, FILE** file);
-char *scan();
 
 int main(int argc, char *argv[]) {
-  bool printKeys = false;
-  bool runOneKey = false;
-  bool runAllKeys = true;
+  bool printKeys, runOneKey, runAllKeys;
+  printKeys = runOneKey = false;
+  runAllKeys = true;
   int c;
   char* fileName = "";
   char* key;
@@ -31,21 +30,16 @@ int main(int argc, char *argv[]) {
       {"showkeys", no_argument,       0,  's'},
       {"help",     no_argument,       0,  'h'},
       {"version",  no_argument,       0,  'v'},
-      {"input",    required_argument, 0,  'i'},
       {0,          0,                 0,   0 }
     };
 
-    c = getopt_long(argc, argv, "k:i:shv",
+    c = getopt_long(argc, argv, "shvk:",
 		    long_options, &option_index);
     if (c == -1)
       break;
 
     switch (c) {
 
-    case 'i':			/* --input */
-      fileName = optarg;
-
-      break;
 
     case 's':			/* --showkeys */
       printKeys = true;
@@ -58,12 +52,11 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'h':			/* --help */
-      printf("Usage: %s --input file [OPTION]... \n", program_name);
+      printf("Usage: %s [OPTION]... [FILE]... \n", program_name);
       fputs("\
 By default, the command prints all rotations of the input file.\n\
 \nThe command options allow for specifying a key or \n\
 printing the key on the line.\n\
-  -i file --input file    specify input file \n\
   -s      --showkeys      print encryption key \n\
   -k n    --key n         specify one encryption key n\n\
   -h      --help          print this page and exit\n\
@@ -83,9 +76,22 @@ There is NO WARRANTY, to the extent permitted by law.\n\
       exit(EXIT_SUCCESS);
       break;
 
+    case '?':
+      printf("Try '%s --help' for more information.", program_name);
+      exit(EXIT_FAILURE);
+	break;
+      
     default:
       fprintf(stderr,"?? getopt returned character code 0%o ??\n", c);
     }
+  }
+
+
+  if(optind != argc-1) {	/* Lot of stuff could be added here */
+    fprintf(stderr, "File name not specified");
+    exit(EXIT_FAILURE);
+  } else {
+    fileName = argv[optind];
   }
   
   if (*fileName == '\0') {
@@ -96,28 +102,29 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   }
   
   if (file == NULL) {
-    fprintf(stderr,"File \"%s\" could not be opened\n", optarg);
+    fprintf(stderr,"File \"%s\" could not be opened\n", fileName);
     exit(EXIT_FAILURE);
   }
+
   if (runAllKeys) {
       allKeys(printKeys, &file);
       exit(EXIT_SUCCESS);
   }
 
   if (runOneKey) {
-      oneKey(key, printKeys, &file);
-      exit(EXIT_SUCCESS);
+    oneKey(key, printKeys, &file);
+    exit(EXIT_SUCCESS);
   }
   
 }
 
-void oneKey(char* optarg, bool printKeys, FILE** file) {
+void oneKey(char* keyString, bool printKeys, FILE** file) {
   char *end;
-  long key = strtol(optarg, &end, 10);
+  long key = strtol(keyString, &end, 10);
   char c;
 
-  if (end == optarg || *end != '\0') {
-    fprintf(stderr,"\"%s\" could not be converted to a number\n", optarg);
+  if (end == keyString || *end != '\0') {
+    fprintf(stderr,"\"%s\" could not be converted to a number\n", keyString);
     exit(EXIT_FAILURE);
   }
 
