@@ -9,9 +9,9 @@
 #define VERSION "1.0"
 #define AUTHOR  "Seth Buchanan"
 
-void rotateChar(char input, long key);
-void oneKey(char* optarg, bool printKeys, FILE** file);
-void allKeys(bool printKeys, FILE** file);
+void rotateChar(char input, int key);
+void oneKey(char* optarg, bool printKeys, FILE* file);
+void allKeys(bool printKeys, FILE* file);
 
 int main(int argc, char *argv[]) {
   bool printKeys, runOneKey, runAllKeys;
@@ -84,22 +84,19 @@ There is NO WARRANTY, to the extent permitted by law.\n\
     default:
       fprintf(stderr,"?? getopt returned character code 0%o ??\n", c);
     }
+
   }
 
 
   if(optind != argc-1) {	/* Lot of stuff could be added here */
-    fprintf(stderr, "File name not specified");
+    fprintf(stderr, "File name not specified\n");
     exit(EXIT_FAILURE);
   } else {
     fileName = argv[optind];
   }
   
-  if (*fileName == '\0') {
-    printf("Usage: %s --input file [OPTION]... \nUse --help to access help page", program_name);
-    exit(EXIT_FAILURE);
-  } else {
-    file = fopen(fileName, "r");
-  }
+  file = fopen(fileName, "r");
+
   
   if (file == NULL) {
     fprintf(stderr,"File \"%s\" could not be opened\n", fileName);
@@ -107,20 +104,20 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   }
 
   if (runAllKeys) {
-      allKeys(printKeys, &file);
+      allKeys(printKeys, file);
       exit(EXIT_SUCCESS);
   }
 
   if (runOneKey) {
-    oneKey(key, printKeys, &file);
+    oneKey(key, printKeys, file);
     exit(EXIT_SUCCESS);
   }
   
 }
 
-void oneKey(char* keyString, bool printKeys, FILE** file) {
+void oneKey(char* keyString, bool printKeys, FILE* file) {
   char *end;
-  long key = strtol(keyString, &end, 10);
+  int key = strtol(keyString, &end, 10);
   char c;
 
   if (end == keyString || *end != '\0') {
@@ -129,37 +126,37 @@ void oneKey(char* keyString, bool printKeys, FILE** file) {
   }
 
   if (printKeys) {
-    printf("KEY: %lu\t", key);
+    printf("KEY: %d\t", key);
   }
 
-  while ((c = fgetc(*file)) != EOF) {
-    rotateChar((char)c, key);
+  while ((c = fgetc(file)) != EOF) {
+    rotateChar(c, key);
   }
-  fclose(*file);
+  fclose(file);
 
 }
 
-void allKeys(bool printKeys, FILE** file) {
-  long key;
+void allKeys(bool printKeys, FILE* file) {
+  int key;
   char c;
 
   for (key = 1; key < 26; key++) {
 
     if (printKeys) {
-      printf("KEY: %lu\t", key);
+      printf("KEY: %d\t", key);
     }
 
-    while ((c = fgetc(*file)) != EOF) {
-      rotateChar((char)c, key);
+    while ((c = fgetc(file)) != EOF) {
+      rotateChar(c, key);
     }
 
-    rewind(*file);
+    rewind(file);
   }
-  fclose(*file);
+  fclose(file);
 }
 
 
-void rotateChar(char input, long key) {
+void rotateChar(char input, int key) {
   if (isupper(input)) {
     putchar((((input - 'A') + key) % 26) + 'A');
   } else if (islower(input)) {
