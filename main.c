@@ -11,7 +11,12 @@
 
 void rotateChar(char input, int key);
 void oneKey(char* optarg, bool printKeys, FILE* file);
-void allKeys(bool printKeys, FILE* file);
+void allKeysFile(bool printKeys, FILE* file);
+void allKeysMemory(bool printKeys, char* file);
+
+void bufferInput(bool printKeys);
+void fileTime(bool printKeys, char* buff);
+
 
 int main(int argc, char *argv[]) {
   bool printKeys, runOneKey, runAllKeys;
@@ -39,8 +44,6 @@ int main(int argc, char *argv[]) {
       break;
 
     switch (c) {
-
-
     case 's':			/* --showkeys */
       printKeys = true;
       break;
@@ -77,7 +80,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
       break;
 
     case '?':
-      printf("Try '%s --help' for more information.", program_name);
+      printf("Try '%s --help' for more information.\n", program_name);
       exit(EXIT_FAILURE);
 	break;
       
@@ -87,14 +90,18 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
   }
 
-
+  printf("optind: %d\n argc: %d\n", optind, argc);
   if(optind != argc-1) {	/* Lot of stuff could be added here */
-    fprintf(stderr, "File name not specified\n");
-    exit(EXIT_FAILURE);
-  } else {
-    fileName = argv[optind];
+    if (runAllKeys) {
+      bufferInput(printKeys);
+    }
+    if (runOneKey) {
+      oneKey(key, printKeys, stdin);
+      exit(EXIT_SUCCESS);
+    }
   }
-  
+
+  fileName = argv[optind];
   file = fopen(fileName, "r");
 
   
@@ -104,7 +111,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   }
 
   if (runAllKeys) {
-      allKeys(printKeys, file);
+      allKeysFile(printKeys, file);
       exit(EXIT_SUCCESS);
   }
 
@@ -126,24 +133,23 @@ void oneKey(char* keyString, bool printKeys, FILE* file) {
   }
 
   if (printKeys) {
-    printf("KEY: %d\t", key);
+    printf("Key: %d\t", key);
   }
 
   while ((c = fgetc(file)) != EOF) {
     rotateChar(c, key);
   }
   fclose(file);
-
 }
 
-void allKeys(bool printKeys, FILE* file) {
+
+void allKeysFile(bool printKeys, FILE* file) {
   int key;
   char c;
-
   for (key = 1; key < 26; key++) {
 
     if (printKeys) {
-      printf("KEY: %d\t", key);
+      printf("Key: %d\t", key);
     }
 
     while ((c = fgetc(file)) != EOF) {
@@ -155,6 +161,24 @@ void allKeys(bool printKeys, FILE* file) {
   fclose(file);
 }
 
+
+void allKeysMemory(bool printKeys, char* buff) {
+  if (buff[0] == '\0')		/* prevents 26 newlines when no input */
+    exit(EXIT_SUCCESS);
+
+  int size = strlen(buff), i, key;
+  for (key = 1; key < 26; key++) {
+
+    if (printKeys)
+      printf("Key: %d\t", key);
+
+    for (i = 0; i < size; i++)
+      rotateChar(buff[i], key);
+
+    if (buff[i-1] != '\n')
+      putchar('\n');
+  }
+}
 
 void rotateChar(char input, int key) {
   if (isupper(input)) {
@@ -169,3 +193,71 @@ void rotateChar(char input, int key) {
 }
 
   
+
+void bufferInput(bool printKeys) {
+    char *buff = NULL, *tmp = NULL;
+    size_t size = 4096, index = 0, count = 0;
+    int ch = EOF;
+
+    buff = (char*) malloc(size*sizeof(char));
+    
+    while (ch) {
+        ch = getc(stdin);
+
+        /* Check if we need to stop. */
+        if (ch == EOF)
+            ch = 0;
+
+        /* Check if we need to expand. */
+        if (size <= index) {
+	  if (count >= 16) {	/* ~256M. For tuning, use the following calculation:
+				   $ echo $((4096 * $((2**count)))) | numfmt --to iec  */
+	    fileTime(printKeys, buff); /* it's file time bb */
+	    exit(EXIT_SUCCESS);
+	  }
+            size *= 2;		/* buff size will be 4096, 8192, 16384 etc. */
+	    count++;
+
+            tmp = realloc(buff, size);
+            if (!tmp) {
+                free(buff);
+                buff = NULL;
+                break;
+            }
+            buff = tmp;
+        }
+
+        /* Actually store the thing. */
+        buff[index++] = ch;
+    }
+    allKeysMemory(printKeys, buff);
+    exit(EXIT_SUCCESS);
+}
+
+
+
+void fileTime(bool printKeys, char* buff) {
+
+  FILE * temp = tmpfile();
+  char ch = EOF;
+
+  if (temp != NULL) {
+    fputs(buff, temp);
+  } else {
+    fprintf(stderr, "Couldn't make temporary file");
+    exit(EXIT_FAILURE);
+  }
+
+  while (ch) {
+    ch = getc(stdin);
+    
+    if (ch == EOF)
+      ch = 0;
+    
+    fputc(ch, temp);
+  }
+
+  rewind(temp);			/* gotta reel back the VHS for the next guy  */
+  allKeysFile(printKeys, temp);
+  exit(EXIT_FAILURE);
+}
