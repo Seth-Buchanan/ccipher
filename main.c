@@ -90,7 +90,6 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
   }
 
-  printf("optind: %d\n argc: %d\n", optind, argc);
   if(optind != argc-1) {	/* Lot of stuff could be added here */
     if (runAllKeys) {
       bufferInput(printKeys);
