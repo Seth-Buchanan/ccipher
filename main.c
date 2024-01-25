@@ -89,7 +89,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
   }
 
-  if(optind != argc-1) {	/* Lot of stuff could be added here */
+  if(optind == argc) {	/* Lot of stuff could be added here */
     if (runAllKeys) {
       bufferInput(printKeys);
       exit(EXIT_SUCCESS);
@@ -100,30 +100,31 @@ There is NO WARRANTY, to the extent permitted by law.\n\
     }
   }
 
-  fileName = argv[optind];
-  file = fopen(fileName, "r");
+  for (int i = optind; i < argc; i++) {
+    fileName = argv[i];
+    file = fopen(fileName, "r");
 
-  
-  if (file == NULL) {
-    if (fileName[0] == '\0') {
-      fputs("invalid zero-length file name\n", stderr);
+    if (file == NULL) {
+      if (fileName[0] == '\0') {
+	fputs("invalid zero-length file name\n", stderr);
+	exit(EXIT_FAILURE);
+      }
+      fprintf(stderr,"file \"%s\" could not be opened\n", fileName);
       exit(EXIT_FAILURE);
     }
-    fprintf(stderr,"file \"%s\" could not be opened\n", fileName);
-    exit(EXIT_FAILURE);
-  }
 
-  if (runAllKeys) {
+    if (runAllKeys) {
       allKeysFile(printKeys, file);
-      exit(EXIT_SUCCESS);
-  }
+    }
 
-  if (runOneKey) {
-    oneKey(key, printKeys, file);
-    exit(EXIT_SUCCESS);
+    if (runOneKey) {
+      oneKey(key, printKeys, file);
+    }
   }
-  
+  exit(EXIT_SUCCESS);
 }
+  
+
 
 
 void oneKey(char* keyString, bool printKeys, FILE* file) {
