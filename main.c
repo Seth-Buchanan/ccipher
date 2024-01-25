@@ -13,7 +13,6 @@ void rotateChar(char input, int key);
 void oneKey(char* optarg, bool printKeys, FILE* file);
 void allKeysFile(bool printKeys, FILE* file);
 void allKeysMemory(bool printKeys, char* file);
-
 void bufferInput(bool printKeys);
 void fileTime(bool printKeys, char* buff);
 
@@ -93,6 +92,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   if(optind != argc-1) {	/* Lot of stuff could be added here */
     if (runAllKeys) {
       bufferInput(printKeys);
+      exit(EXIT_SUCCESS);
     }
     if (runOneKey) {
       oneKey(key, printKeys, stdin);
@@ -105,7 +105,11 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
   
   if (file == NULL) {
-    fprintf(stderr,"File \"%s\" could not be opened\n", fileName);
+    if (fileName[0] == '\0') {
+      fputs("invalid zero-length file name\n", stderr);
+      exit(EXIT_FAILURE);
+    }
+    fprintf(stderr,"file \"%s\" could not be opened\n", fileName);
     exit(EXIT_FAILURE);
   }
 
@@ -120,6 +124,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   }
   
 }
+
 
 void oneKey(char* keyString, bool printKeys, FILE* file) {
   char *end;
@@ -179,6 +184,7 @@ void allKeysMemory(bool printKeys, char* buff) {
   }
 }
 
+
 void rotateChar(char input, int key) {
   if (isupper(input)) {
     putchar((((input - 'A') + key) % 26) + 'A');
@@ -191,7 +197,6 @@ void rotateChar(char input, int key) {
   }
 }
 
-  
 
 void bufferInput(bool printKeys) {
     char *buff = NULL, *tmp = NULL;
@@ -212,7 +217,7 @@ void bufferInput(bool printKeys) {
 	  if (count >= 16) {	/* ~256M. For tuning, use the following calculation:
 				   $ echo $((4096 * $((2**count)))) | numfmt --to iec  */
 	    fileTime(printKeys, buff); /* it's file time bb */
-	    exit(EXIT_SUCCESS);
+	    return;
 	  }
             size *= 2;		/* buff size will be 4096, 8192, 16384 etc. */
 	    count++;
@@ -230,9 +235,8 @@ void bufferInput(bool printKeys) {
         buff[index++] = ch;
     }
     allKeysMemory(printKeys, buff);
-    exit(EXIT_SUCCESS);
+    return;
 }
-
 
 
 void fileTime(bool printKeys, char* buff) {
@@ -258,5 +262,5 @@ void fileTime(bool printKeys, char* buff) {
 
   rewind(temp);			/* gotta reel back the VHS for the next guy  */
   allKeysFile(printKeys, temp);
-  exit(EXIT_FAILURE);
+  return;
 }
