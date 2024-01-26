@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
   bool printKeys, runOneKey, runAllKeys;
   printKeys = runOneKey = false;
   runAllKeys = true;
-  int c;
+  int c, i;
   char* fileName = "";
   char* key;
   char* program_name = argv[0];
@@ -100,7 +100,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
     }
   }
 
-  for (int i = optind; i < argc; i++) {
+  for (i = optind; i < argc; i++) {
     fileName = argv[i];
     file = fopen(fileName, "r");
 
