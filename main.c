@@ -9,8 +9,9 @@
 #define VERSION "1.0"
 #define AUTHOR  "Seth Buchanan"
 
-void rotateChar(char input, int key);
-void oneKey(char* optarg, bool printKeys, FILE* file);
+void encryptChar(char input, int key);
+void decryptChar(char input, int key);
+void oneKey(char* optarg, bool printKeys, FILE* file, void (*rotateChar)(char, int));
 void allKeysFile(bool printKeys, FILE* file);
 void allKeysMemory(bool printKeys, char* file);
 void bufferInput(bool printKeys);
@@ -18,10 +19,10 @@ void fileTime(bool printKeys, char* buff);
 
 
 int main(int argc, char *argv[]) {
-  bool printKeys, runOneKey, runAllKeys;
-  printKeys = runOneKey = false;
-  runAllKeys = true;
-  int c;
+  bool printKeys, runOneKey, runAllKeys, decryptInput;
+  printKeys = runOneKey = runAllKeys = decryptInput = false;
+  
+  int c, i;
   char* fileName = "";
   char* key;
   char* program_name = argv[0];
@@ -30,14 +31,16 @@ int main(int argc, char *argv[]) {
   while (true) {
     int option_index = 0;
     static struct option long_options[] = {
-      {"key",      required_argument, 0,  'k'},
-      {"showkeys", no_argument,       0,  's'},
-      {"help",     no_argument,       0,  'h'},
-      {"version",  no_argument,       0,  'v'},
-      {0,          0,                 0,   0 }
+      {"encryptkey", required_argument, 0,  'e'},
+      {"decryptkey", required_argument, 0,  'd'},
+      {"crack",      no_argument,       0,  'c'},
+      {"showkeys",   no_argument,       0,  's'},
+      {"help",       no_argument,       0,  'h'},
+      {"version",    no_argument,       0,  'v'},
+      {0,            0,                 0,   0 }
     };
 
-    c = getopt_long(argc, argv, "shvk:",
+    c = getopt_long(argc, argv, "shcvd:e:",
 		    long_options, &option_index);
     if (c == -1)
       break;
@@ -46,11 +49,20 @@ int main(int argc, char *argv[]) {
     case 's':			/* --showkeys */
       printKeys = true;
       break;
-      
-    case 'k':			/* --key */
+
+    case 'e':			/* --encrypt */
       key = optarg;
-      runAllKeys = false;
       runOneKey = true;
+      break;
+      
+    case 'd':			/* --decryptkey */
+      key = optarg;
+      decryptInput = true;
+      runOneKey = true;
+      break;
+
+    case 'c':			/* --crack */
+      runAllKeys = true;
       break;
 
     case 'h':			/* --help */
@@ -79,7 +91,10 @@ There is NO WARRANTY, to the extent permitted by law.\n\
       break;
 
     case '?':
-      printf("Try '%s --help' for more information.\n", program_name);
+    fprintf(stderr, " \
+Usage: %s \t[-edcshv] [--showkeys] [--encryptkey] \n\
+          \t[--decryptkey] [--crack] <file> ... \n\
+       %s [--help] \n", program_name, program_name);
       exit(EXIT_FAILURE);
 	break;
       
@@ -89,18 +104,31 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
   }
 
-  if(optind == argc) {	/* Lot of stuff could be added here */
+  if (!(runAllKeys || runOneKey)){
+    fprintf(stderr, " \
+Usage: %s \t[-edcshv] [--showkeys] [--encryptkey] \n\
+          \t[--decryptkey] [--crack] <file> ... \n\
+       %s [--help] \n", program_name, program_name);
+  } else if (runAllKeys && runOneKey){
+    fputs("--decryptkey and --encryptkey cannot both be specified", stderr);
+    exit(EXIT_FAILURE);
+  }
+
+  if(optind == argc) {
     if (runAllKeys) {
       bufferInput(printKeys);
       exit(EXIT_SUCCESS);
     }
     if (runOneKey) {
-      oneKey(key, printKeys, stdin);
-      exit(EXIT_SUCCESS);
+      if(decryptInput) {
+	oneKey(key, printKeys, stdin, decryptChar);
+      } else {
+	oneKey(key, printKeys, stdin, encryptChar);
+      }
     }
   }
 
-  for (int i = optind; i < argc; i++) {
+  for (i = optind; i < argc; i++) {
     fileName = argv[i];
     file = fopen(fileName, "r");
 
@@ -118,7 +146,11 @@ There is NO WARRANTY, to the extent permitted by law.\n\
     }
 
     if (runOneKey) {
-      oneKey(key, printKeys, file);
+      if(decryptInput) {
+	oneKey(key, printKeys, file, decryptChar);
+      } else {
+	oneKey(key, printKeys, file, encryptChar);
+      }
     }
   }
   exit(EXIT_SUCCESS);
@@ -126,8 +158,7 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   
 
 
-
-void oneKey(char* keyString, bool printKeys, FILE* file) {
+void oneKey(char* keyString, bool printKeys, FILE* file, void (rotateChar)(char, int)) {
   char *end;
   int key = strtol(keyString, &end, 10);
   char c;
@@ -158,7 +189,7 @@ void allKeysFile(bool printKeys, FILE* file) {
     }
 
     while ((c = fgetc(file)) != EOF) {
-      rotateChar(c, key);
+      decryptChar(c, key);
     }
 
     rewind(file);
@@ -178,7 +209,7 @@ void allKeysMemory(bool printKeys, char* buff) {
       printf("Key: %d\t", key);
 
     for (i = 0; i < size; i++)
-      rotateChar(buff[i], key);
+      decryptChar(buff[i], key);
 
     if (buff[i-1] != '\n')
       putchar('\n');
@@ -186,13 +217,25 @@ void allKeysMemory(bool printKeys, char* buff) {
 }
 
 
-void rotateChar(char input, int key) {
+void encryptChar(char input, int key) {
   if (isupper(input)) {
     putchar((((input - 'A') + key) % 26) + 'A');
   } else if (islower(input)) {
     putchar((((input - 'a') + key) % 26) + 'a');
   } else if (isdigit(input)) {
     putchar((((input - '0') + key) % 10) + '0');
+  } else {
+    putchar(input);
+  }
+}
+
+void decryptChar(char input, int key) {
+  if (isupper(input)) {
+    putchar((((input - 'A'))));
+  } else if (islower(input)) {
+    putchar((((input - 'a') - key) % 26) + 'a');
+  } else if (isdigit(input)) {
+    putchar((((input - '0') - key) % 10) + '0');
   } else {
     putchar(input);
   }
