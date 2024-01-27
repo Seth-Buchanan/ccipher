@@ -123,8 +123,6 @@ There is NO WARRANTY, to the extent permitted by law.\n\
   }
   exit(EXIT_SUCCESS);
 }
-  
-
 
 
 void oneKey(char* keyString, bool printKeys, FILE* file) {
