@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'd':			/* --decrypt */
-      key = ~convertKey(optarg) - 1;
+      key = ~convertKey(optarg) + 1;
       runAllKeys = false;
       runOneKey = true;
       break;
@@ -229,7 +229,7 @@ void makeNumMap(char* numMap, int key) {
   int i;
   if (key < 0) {
     key %= 10;
-    key += 26;
+    key += 10;
   }
   for (i = 0; i < 10; i++) {
     numMap[i] = '0' + ((i + key) % 10);
