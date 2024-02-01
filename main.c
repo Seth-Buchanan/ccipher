@@ -26,6 +26,7 @@ int  convertKey(char* keyString);
 
 int main(int argc, char** argv) {
   bool printKeys, runOneKey, runAllKeys;
+
   printKeys = runOneKey = runAllKeys = false;
 
   int c, i, key;
