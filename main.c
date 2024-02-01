@@ -9,7 +9,8 @@
 #define VERSION "1.0"
 #define AUTHOR  "Seth Buchanan"
 
-int convertKey(char* keyString);
+
+int  convertKey(char* keyString);
 void encryptChar(char, char*, char*);
 void makeMap(char*, int);
 void makeNumMap(char*, int);
@@ -18,6 +19,7 @@ void allKeysFile(bool printKeys, FILE* file);
 void allKeysMemory(bool printKeys, char* file);
 void bufferInput(bool printKeys);
 void fileTime(bool printKeys, char* buff);
+void printUsage(char* program_name);
 
 
 int main(int argc, char *argv[]) {
@@ -68,16 +70,7 @@ int main(int argc, char *argv[]) {
       break;
 
     case 'h':			/* --help */
-      printf("Usage: %s [OPTION]... [FILE]... \n", program_name);
-      fputs("\
-By default, the command prints all rotations of the input file.\n\
-\nThe command options allow for specifying a key or \n\
-printing the key on the line.\n\
-  -s      --showkeys      print encryption key \n\
-  -k n    --key n         specify one encryption key n\n\
-  -h      --help          print this page and exit\n\
-  -v      --version       print program information\n\
-", stdout);
+      printUsage(program_name);
       exit(EXIT_SUCCESS);
       break;
 
@@ -135,6 +128,10 @@ There is NO WARRANTY, to the extent permitted by law.\n\
       oneKey(key, printKeys, file);
     }
   }
+
+  if (!(  printKeys || runOneKey || runAllKeys)) {
+      printUsage(program_name);
+  }
   exit(EXIT_SUCCESS);
 }
 
@@ -142,13 +139,12 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 void oneKey(int key, bool printKeys, FILE* file) {
   char *map    = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
+  char c;
 
   makeMap(map, key);
   makeNumMap(numMap, key);
-  char c;
-
   if (printKeys) {
-    printf("Key: %d\t", key);
+    printf("Key: %d\t", abs(key));
   }
 
   while ((c = fgetc(file)) != EOF) {
@@ -164,14 +160,15 @@ void oneKey(int key, bool printKeys, FILE* file) {
 void allKeysFile(bool printKeys, FILE* file) {
   char *map    = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
-  int key;
   char c;
-  for (key = 1; key < 26; key++) {
+  int key;
+
+  for (key = -1; key > -26; key--) {
     makeMap(map, key);
     makeNumMap(numMap, key);
 
     if (printKeys) {
-      printf("Key: %d\t", key);
+      printf("Key: %d\t", abs(key));
     }
 
     while ((c = fgetc(file)) != EOF) {
@@ -192,14 +189,14 @@ void allKeysMemory(bool printKeys, char* buff) {
 
   char *map    = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
-
+  
   int size = strlen(buff), i, key;
-  for (key = 1; key < 26; key++) {
+  for (key = -1; key > -26; key--) {
     makeMap(map, key);
     makeNumMap(numMap, key);
 
     if (printKeys)
-      printf("Key: %d\t", key);
+      printf("Key: %d\t", abs(key));
 
     for (i = 0; i < size; i++)
       encryptChar(buff[i], map, numMap);
@@ -210,7 +207,6 @@ void allKeysMemory(bool printKeys, char* buff) {
   free(map);
   free(numMap);
 }
-
 
 
 void makeMap(char* map, int key) {
@@ -225,16 +221,19 @@ void makeMap(char* map, int key) {
   }
 }
 
+
 void makeNumMap(char* numMap, int key) {
   int i;
   if (key < 0) {
     key %= 10;
     key += 10;
   }
+
   for (i = 0; i < 10; i++) {
     numMap[i] = '0' + ((i + key) % 10);
   }
 }
+
 
 void encryptChar(char input, char* map, char* numMap) {
   if (islower(input)) {
@@ -247,6 +246,7 @@ void encryptChar(char input, char* map, char* numMap) {
     putchar(input);
   }
 }
+
 
 void bufferInput(bool printKeys) {
     char *buff = NULL, *tmp = NULL;
@@ -315,6 +315,7 @@ void fileTime(bool printKeys, char* buff) {
   return;
 }
 
+
 int convertKey(char* keyString) {
   char *end;
   int key = strtol(keyString, &end, 10);
@@ -324,4 +325,21 @@ int convertKey(char* keyString) {
     exit(EXIT_FAILURE);
   }
   return key;
+}
+
+
+void printUsage(char* program_name){
+      printf("Usage: %s [OPTION]... [FILE]... \n", program_name);
+      fputs("\
+Specify a cesar cipher encryption or decryption key \n\
+or decrypt given text with all 26 keys.\n\n\
+By default, print help and exit.\n\n\
+Without a FILE, input is taken through standard in.\n\
+  -e      --encrypt       encrypt text with specified key \n\
+  -d      --decrypt       decrypt text with specified key \n\
+  -a      --allkeys       decrypt text with all keys \n\
+  -s      --showkeys      print encryption key \n\
+  -h      --help          print this page and exit\n\
+  -v      --version       print program information\n\
+", stdout);
 }
