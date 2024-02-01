@@ -1,6 +1,4 @@
 # ccipher
-Cesar cipher command line utility
-
 ## Cesar Shift Ciphers Simplified
 
 Ever run across an annoying cesear cipher and not know what to do with it?
@@ -15,17 +13,8 @@ With the --allkeys option, the input is decrypted with keys 1-25. The input can 
 ### File
 ```bash
 $ cat input
-pants
-$ ccipher -a input
-ozmsr
-nylrq
-mxkqp
-lwjpo
-kvion
-juhnm
-itgml
-hsflk
 grekj
+$ ccipher -a input
 fqdji
 epcih
 dobhg
@@ -42,38 +31,47 @@ terxw
 sdqwv
 rcpvu
 qbout
+pants
+ozmsr
+nylrq
+mxkqp
+lwjpo
+kvion
+juhnm
+itgml
+hsflk
 ```
 
 ### Standard In
 Using the --showkeys option also allows for pin-pointing what the decryption key is for the given text.
 
 ```bash
-$ echo "pants" | ccipher -sa
-Key: 1	ozmsr
-Key: 2	nylrq
-Key: 3	mxkqp
-Key: 4	lwjpo
-Key: 5	kvion
-Key: 6	juhnm
-Key: 7	itgml
-Key: 8	hsflk
-Key: 9	grekj
-Key: 10	fqdji
-Key: 11	epcih
-Key: 12	dobhg
-Key: 13	cnagf
-Key: 14	bmzfe
-Key: 15	alyed
-Key: 16	zkxdc
-Key: 17	yjwcb
-Key: 18	xivba
-Key: 19	whuaz
-Key: 20	vgtzy
-Key: 21	ufsyx
-Key: 22	terxw
-Key: 23	sdqwv
-Key: 24	rcpvu
-Key: 25	qbout
+$ echo "grekj" | ccipher -sa
+Key: 1	fqdji
+Key: 2	epcih
+Key: 3	dobhg
+Key: 4	cnagf
+Key: 5	bmzfe
+Key: 6	alyed
+Key: 7	zkxdc
+Key: 8	yjwcb
+Key: 9	xivba
+Key: 10	whuaz
+Key: 11	vgtzy
+Key: 12	ufsyx
+Key: 13	terxw
+Key: 14	sdqwv
+Key: 15	rcpvu
+Key: 16	qbout
+Key: 17	pants
+Key: 18	ozmsr
+Key: 19	nylrq
+Key: 20	mxkqp
+Key: 21	lwjpo
+Key: 22	kvion
+Key: 23	juhnm
+Key: 24	itgml
+Key: 25	hsflk
 ```
 
 ## Use a specified encryption key
