@@ -10,80 +10,91 @@ Ingtmkj znk vurky lxus vray zu sotay gtj lxus sotay zu vray. O grutk yaiikkjkj o
 That is why I came up with the idea of making a commandline program that can work with strings of text that have been shift ciphered.
 
 ## Usage
-By default, in input will be ran through all 26 keys of the shift cipher. The program can either take input through stdin or a specified file.
-### File
-```bash
-$ cat input
-pants
-$ ccipher input
-qbout
-rcpvu
-sdqwv
-terxw
-ufsyx
-vgtzy
-whuaz
-xivba
-yjwcb
-zkxdc
-alyed
-bmzfe
-cnagf
-dobhg
-epcih
-fqdji
-grekj
-hsflk
-itgml
-juhnm
-kvion
-lwjpo
-mxkqp
-nylrq
-ozmsr
-```
-### stdin
-```bash
-$ echo "pants" | ccipher
-qbout
-rcpvu
-sdqwv
-terxw
-ufsyx
-vgtzy
-whuaz
-xivba
-yjwcb
-zkxdc
-alyed
-bmzfe
-cnagf
-dobhg
-epcih
-fqdji
-grekj
-hsflk
-itgml
-juhnm
-kvion
-lwjpo
-mxkqp
-nylrq
-ozmsr
-```
-
-A key can be also be specified that will only print an output shifted by that number.
+With the --allkeys option, the input is decrypted with keys 1-25. The input can be either gathered from stdin or a file.
 
 ### File
 ```bash
 $ cat input
 pants
-$ ccipher --key 12 input
+$ ccipher -a input
+ozmsr
+nylrq
+mxkqp
+lwjpo
+kvion
+juhnm
+itgml
+hsflk
+grekj
+fqdji
+epcih
+dobhg
+cnagf
 bmzfe
+alyed
+zkxdc
+yjwcb
+xivba
+whuaz
+vgtzy
+ufsyx
+terxw
+sdqwv
+rcpvu
+qbout
 ```
 
-### stdin
+### Standard In
 ```bash
-$ echo "pants" | ccipher --key 12
+$ echo "pants" | ccipher -a
+ozmsr
+nylrq
+mxkqp
+lwjpo
+kvion
+juhnm
+itgml
+hsflk
+grekj
+fqdji
+epcih
+dobhg
+cnagf
 bmzfe
+alyed
+zkxdc
+yjwcb
+xivba
+whuaz
+vgtzy
+ufsyx
+terxw
+sdqwv
+rcpvu
+qbout
+```
+The --encrypt and --decrypt options, when given an integer, will shift the input in that direction.
+
+### File
+```bash
+$ cat input
+pants
+$ ccipher -e 7 input
+whuaz
+```
+``` bash 
+$ cat input
+pants
+$ ccipher -d 7 input
+itgml
+```
+
+### Standard In
+```bash
+$ echo "pants" | ccipher -e 7
+whuaz
+```
+```bash
+$ echo "pants" | ccipher -d 7
+itgml
 ```
