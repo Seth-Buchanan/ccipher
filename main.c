@@ -11,8 +11,9 @@
 
 
 int  convertKey(char* keyString);
-void encryptChar(char, char*, char*);
+void encryptChar(char, char*, char*, char*);
 void makeMap(char*, int);
+void makeUpperMap(char*, int);
 void makeNumMap(char*, int);
 void oneKey(int key, bool printKeys, FILE* file);
 void allKeysFile(bool printKeys, FILE* file);
@@ -138,17 +139,28 @@ There is NO WARRANTY, to the extent permitted by law.\n\
 
 void oneKey(int key, bool printKeys, FILE* file) {
   char *map    = (char*) malloc(26*sizeof(char));
+  char *upperMap = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
+
   char c;
 
   makeMap(map, key);
+  makeUpperMap(upperMap, key);
   makeNumMap(numMap, key);
   if (printKeys) {
     printf("Key: %d\t", abs(key));
   }
 
   while ((c = fgetc(file)) != EOF) {
-    encryptChar(c, map, numMap);
+    if (islower(c)) {
+      putchar(map[c - 'a']);
+    } else if (isupper(c)) {
+      putchar(upperMap[c - 'A']);
+    } else if (isdigit(c)) {
+      putchar(numMap[c - '0']);
+    } else {
+      putchar(c);
+    }
   }
   free(map);
   free(numMap);
@@ -159,12 +171,14 @@ void oneKey(int key, bool printKeys, FILE* file) {
 
 void allKeysFile(bool printKeys, FILE* file) {
   char *map    = (char*) malloc(26*sizeof(char));
+  char *upperMap = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
   char c;
   int key;
 
   for (key = -1; key > -26; key--) {
     makeMap(map, key);
+    makeUpperMap(upperMap, key);
     makeNumMap(numMap, key);
 
     if (printKeys) {
@@ -172,7 +186,15 @@ void allKeysFile(bool printKeys, FILE* file) {
     }
 
     while ((c = fgetc(file)) != EOF) {
-      encryptChar(c, map, numMap);
+      if (islower(c)) {
+	putchar(map[c - 'a']);
+      } else if (isupper(c)) {
+	putchar(upperMap[c - 'A']);
+      } else if (isdigit(c)) {
+	putchar(numMap[c - '0']);
+      } else {
+	putchar(c);
+      }
     }
 
     rewind(file);
@@ -188,18 +210,29 @@ void allKeysMemory(bool printKeys, char* buff) {
     exit(EXIT_SUCCESS);
 
   char *map    = (char*) malloc(26*sizeof(char));
+  char *upperMap = (char*) malloc(26*sizeof(char));
   char *numMap = (char*) malloc(10*sizeof(char));
   
   int size = strlen(buff), i, key;
   for (key = -1; key > -26; key--) {
     makeMap(map, key);
+    makeUpperMap(upperMap, key);
     makeNumMap(numMap, key);
 
     if (printKeys)
       printf("Key: %d\t", abs(key));
 
     for (i = 0; i < size; i++)
-      encryptChar(buff[i], map, numMap);
+      if (islower(buff[i])) {
+	putchar(map[buff[i] - 'a']);
+      } else if (isupper(buff[i])) {
+	putchar(upperMap[buff[i] - 'A']);
+      } else if (isdigit(buff[i])) {
+	putchar(numMap[buff[i] - '0']);
+      } else {
+	putchar(buff[i]);
+      }
+
 
     if (buff[i-1] != '\n')
       putchar('\n');
@@ -222,6 +255,19 @@ void makeMap(char* map, int key) {
 }
 
 
+void makeUpperMap(char* upperMap, int key) {
+  int i;
+  if (key < 0) {
+    key %= 26;
+    key += 26;
+  }
+
+  for (i = 0; i < 26; i++) {
+    upperMap[i] = 'A' + ((i + key) % 26);
+  }
+}
+
+
 void makeNumMap(char* numMap, int key) {
   int i;
   if (key < 0) {
@@ -231,19 +277,6 @@ void makeNumMap(char* numMap, int key) {
 
   for (i = 0; i < 10; i++) {
     numMap[i] = '0' + ((i + key) % 10);
-  }
-}
-
-
-void encryptChar(char input, char* map, char* numMap) {
-  if (islower(input)) {
-    putchar(map[input - 'a']);
-  } else if (isupper(input)) {
-    putchar(toupper(map[input - 'A']));
-  } else if (isdigit(input)) {
-    putchar(numMap[input - '0']);
-  } else {
-    putchar(input);
   }
 }
 
