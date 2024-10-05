@@ -19,7 +19,7 @@ void allKeysFile(bool printKeys, FILE* file);
 void allKeysMemory(bool printKeys, char* file);
 void bufferInput(bool printKeys);
 void fileTime(bool printKeys, char* buff);
-void printUsage(char* program_name);
+void usage(char* program_name);
 int  isDir(char*);
 int  convertKey(char* keyString);
 
@@ -28,78 +28,73 @@ int main(int argc, char** argv) {
   bool printKeys, runOneKey, runAllKeys;
 
   printKeys = runOneKey = runAllKeys = false;
-
   int c, i, key;
-  char* fileName = "";
-  char* program_name = argv[0];
+  char* fileName;
   FILE* file;
 
-  while (true) {
-    int option_index = 0;
-    static struct option long_options[] = {
-      {"encrypt",  required_argument, 0,  'e'},
-      {"decrypt",  required_argument, 0,  'd'},
-      {"allkeys",  no_argument,       0,  'a'},
-      {"showkeys", no_argument,       0,  's'},
-      {"help",     no_argument,       0,  'h'},
-      {"version",  no_argument,       0,  'v'},
-      {0,          0,                 0,   0 }
-    };
+  static struct option long_options[] = {
+    {"encrypt",  required_argument, 0,   'e'},
+    {"decrypt",  required_argument, 0,   'd'},
+    {"allkeys",  no_argument,       0,   'a'},
+    {"showkeys", no_argument,       0,   's'},
+    {"help",     no_argument,       0,   'h'},
+    {"version",  no_argument,       0,   'v'},
+    {NULL,       0,                 NULL, 0 }
+  };
 
-    c = getopt_long(argc, argv, "shave:d:",
-		    long_options, &option_index);
-    if (c == -1)
-      break;
-
-    switch (c) {
-    case 's':			/* --showkeys */
-      printKeys = true;
-      break;
+  while ((c = getopt_long (argc, argv, "shave:d", long_options, NULL))
+	 != -1)
+    {
+      switch (c)
+	{
+	case 's':		/* --showkeys */
+	  printKeys = true;
+	  break;
       
-    case 'a':			/* --allkeys */
-      runAllKeys = true;
-      break;
+	case 'a':		/* --allkeys */
+	  runAllKeys = true;
+	  break;
 
-    case 'e':			/* --encrypt */
-      key += convertKey(optarg);
-      runAllKeys = false;
-      runOneKey = true;
-      break;
+	case 'e':		/* --encrypt */
+	  key += convertKey(optarg);
+	  runAllKeys = false;
+	  runOneKey = true;
+	  break;
 
-    case 'd':			/* --decrypt */
-      key -= convertKey(optarg);
-      runAllKeys = false;
-      runOneKey = true;
-      break;
+	case 'd':		/* --decrypt */
+	  key -= convertKey(optarg);
+	  runAllKeys = false;
+	  runOneKey = true;
+	  break;
 
-    case 'h':			/* --help */
-      printUsage(program_name);
-      exit(EXIT_SUCCESS);
-      break;
+	case 'h':		/* --help */
+	  usage(argv[0]);
+	  exit(EXIT_SUCCESS);
+	  break;
 
-    case 'v':			/* --version */
-      printf("%s %s \n", program_name, VERSION);
-      fputs("\
+	case 'v':		/* --version */
+	  printf("%s %s \n", argv[0], VERSION);
+	  fputs("\
 License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>.\n\
 This is free software: you are free to change and redistribute it.\n\
 There is NO WARRANTY, to the extent permitted by law.\n\
 \n", stdout);
-      printf("Written by %s.\n", AUTHOR);
-      exit(EXIT_SUCCESS);
-      break;
+	  printf("Written by %s.\n", AUTHOR);
+	  exit(EXIT_SUCCESS);
+	  break;
 
-    case '?':
-      printf("Try '%s --help' for more information.\n", program_name);
-      exit(EXIT_FAILURE);
-      break;
+	case '?':
+	  printf("Try '%s --help' for more information.\n", argv[0]);
+	  exit(EXIT_FAILURE);
+	  break;
       
-    default:
-      fprintf(stderr,"?? getopt returned character code 0%o ??\n", c);
-    }
+	default:
+	  fprintf(stderr,"?? getopt returned character code 0%o ??\n", c);
+	}
 
-  }
+    }
   if (!(runOneKey || runAllKeys)) {
-    printUsage(program_name);
+    usage(argv[0]);
     exit(EXIT_SUCCESS);
   }
 
@@ -379,7 +374,7 @@ int isDir(char* fileName) {
 }
 
 
-void printUsage(char* program_name) {
+void usage(char* program_name) {
   printf("Usage: %s [OPTION]... [FILE]... \n", program_name);
   fputs("\
 Specify a cesar cipher encryption or decryption key \n\
